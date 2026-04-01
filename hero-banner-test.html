@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero Banner — Test Page</title>
+
+<!-- ====================================================
+     SECTION 2 — CSS (exact copy from code guide)
+==================================================== -->
+<style>
+.hero-banner { line-height:0; }
+.hero-banner img { width:100%; height:auto; display:block; }
+.hero-banner .hero-mobile { display:none; }
+@media (max-width: 768px) {
+  .hero-banner .hero-desktop { display:none; }
+  .hero-banner .hero-mobile { display:block; }
+}
+</style>
+
+<!-- Minimal test-page styling (not part of code guide) -->
+<style>
+  body { margin: 0; font-family: sans-serif; background: #f5f5f5; }
+  .test-info {
+    max-width: 960px; margin: 20px auto; padding: 16px 20px;
+    background: #fff; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; line-height: 1.6; color: #333;
+  }
+  .test-info h1 { font-size: 18px; margin: 0 0 8px; }
+  .test-info code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  .test-info .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .test-info .badge.desk { background: #dbeafe; color: #1d4ed8; }
+  .test-info .badge.mob { background: #dcfce7; color: #16a34a; }
+  .click-log {
+    max-width: 960px; margin: 12px auto; padding: 12px 20px;
+    background: #1a1a1a; color: #4ade80; border-radius: 8px; font-family: monospace; font-size: 13px;
+    min-height: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="test-info">
+  <h1>Hero Banner — Test Page</h1>
+  <p>Resize your browser window to test the responsive breakpoint at <code>768px</code>.</p>
+  <p>
+    <span class="badge desk">Desktop</span> 1920 × 1080 px — 3 regions
+    &nbsp;&nbsp;
+    <span class="badge mob">Mobile</span> 780 × 585 px — 2 regions
+  </p>
+  <p>Click any region — the click log below will show which area was hit.</p>
+</div>
+
+<!-- ====================================================
+     SECTION 3 — HTML (exact copy from code guide)
+==================================================== -->
+<div class="hero-banner">
+  <!-- Desktop: WebP with JPG fallback -->
+  <picture class="hero-desktop">
+    <source srcset="hero-desktop.webp" type="image/webp">
+    <img src="hero-desktop.jpg" usemap="#hero-desktop-map" alt="Hero banner">
+  </picture>
+  <!-- Mobile: WebP with JPG fallback -->
+  <picture class="hero-mobile">
+    <source srcset="hero-mobile.webp" type="image/webp">
+    <img src="hero-mobile.jpg" usemap="#hero-mobile-map" alt="Hero banner">
+  </picture>
+</div>
+
+<!-- Desktop image map -->
+<map name="hero-desktop-map">
+  <area shape="rect" coords="10,10,480,1070" href="#" alt="Region 1">
+  <area shape="rect" coords="490,10,1430,1070" href="#" alt="Region 2">
+  <area shape="rect" coords="1440,10,1910,1070" href="#" alt="Region 3">
+</map>
+
+<!-- Mobile image map -->
+<map name="hero-mobile-map">
+  <area shape="rect" coords="10,10,770,288" href="#" alt="Region 1">
+  <area shape="rect" coords="10,298,770,576" href="#" alt="Region 2">
+</map>
+
+<!-- Click log (test helper, not part of code guide) -->
+<div class="click-log" id="log">Click log: waiting...</div>
+
+<!-- ====================================================
+     SECTION 4 — JAVASCRIPT (exact copy from code guide)
+==================================================== -->
+<script>
+(function(){
+  function resizeMap(img,map){
+    if(!img.naturalWidth||img.offsetParent===null)return;
+    var scale=img.clientWidth/img.naturalWidth;
+    map.querySelectorAll('area').forEach(function(a){
+      var oc=a.dataset.coords||(a.dataset.coords=a.getAttribute('coords'));
+      a.setAttribute('coords',oc.split(',').map(function(c){return Math.round(parseFloat(c)*scale);}).join(','));
+    });
+  }
+  function initMaps(){
+    document.querySelectorAll('img[usemap]').forEach(function(img){
+      var map=document.querySelector('map[name="'+img.getAttribute('usemap').replace('#','')+'"]');
+      if(!map)return;
+      function r(){resizeMap(img,map);}
+      img.addEventListener('load',r);
+      window.addEventListener('resize',r);
+      r();
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initMaps);
+  else initMaps();
+})();
+</script>
+
+<!-- ====================================================
+     CLICK LOGGING (test helper)
+==================================================== -->
+<script>
+(function(){
+  // Re-trigger image map scaling after images load
+  setTimeout(function(){
+    window.dispatchEvent(new Event('resize'));
+  }, 300);
+
+  // Click logging
+  document.querySelectorAll('area').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      var mapName = this.closest('map').name;
+      var mode = mapName.indexOf('desktop') !== -1 ? 'DESKTOP' : 'MOBILE';
+      var coords = this.getAttribute('coords');
+      var log = document.getElementById('log');
+      var time = new Date().toLocaleTimeString();
+      log.textContent = '[' + time + '] ' + mode + ' — ' + this.alt + ' clicked (coords: ' + coords + ')';
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
